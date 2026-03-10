@@ -1,3 +1,5 @@
+Experimental Architecture
+
 What This Project Explores
 
 Semantic Tether Point explores a simple constraint for AI systems:
