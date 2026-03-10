@@ -24,6 +24,7 @@ Example Output
     }
   ]
 }
+
 Semantic Tether Point is an experimental architecture for grounding AI outputs to explicit reference anchors. Instead of allowing models to summarize freely, the system requires every interpretation to remain tied to verifiable signals such as source text, timestamps, metadata, or document sections.
 
 The goal is to prevent semantic drift and make AI reasoning traceable.
