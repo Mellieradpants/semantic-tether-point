@@ -105,4 +105,5 @@ Anchored reasoning allows users to trace how AI arrived at a conclusion. This im
 
 Early prototype and architecture exploration.
 
+prototype now includes drift detection.
 
