@@ -10,8 +10,19 @@ This repository contains a minimal prototype demonstrating this behavior using s
 
 
 
-
 # Semantic Tether Point
+Project Summary
+
+Semantic Tether Point is an experimental AI architecture rule designed to prevent semantic drift in language models.
+
+The core idea is simple:
+
+Interpretation must remain tethered to a verifiable source anchor.
+
+If interpretation becomes uncertain or detached from its source, the system must return to the last verified tether point before continuing analysis.
+
+This repository contains a minimal prototype demonstrating that behavior using anchored text references and structured output.
+
 Example Output
 
 {
