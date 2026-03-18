@@ -3,16 +3,6 @@ import json
 from pathlib import Path
 
 
-CONSTRAINT_KEYWORDS = [
-    "must",
-    "shall",
-    "required",
-    "prohibited",
-    "cannot",
-    "may"
-]
-
-
 def extract_anchors(document_text: str):
     anchors = []
     lines = [line.strip() for line in document_text.splitlines()]
@@ -22,10 +12,16 @@ def extract_anchors(document_text: str):
             continue
 
         line_lower = line.lower()
-        matched_signals = [
-            keyword for keyword in CONSTRAINT_KEYWORDS
-            if keyword in line_lower
-        ]
+        matched_signals = []
+
+        if "must" in line_lower or "shall" in line_lower or "required" in line_lower:
+            matched_signals.append("obligation")
+
+        if "may" in line_lower:
+            matched_signals.append("permission")
+
+        if "cannot" in line_lower or "prohibited" in line_lower:
+            matched_signals.append("prohibition")
 
         if matched_signals:
             anchors.append({
