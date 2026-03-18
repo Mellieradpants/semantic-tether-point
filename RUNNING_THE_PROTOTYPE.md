@@ -1,3 +1,5 @@
+This prototype uses the v2 extractor as the current reference implementation.
+
 Running the Prototype
 
 What This Does
