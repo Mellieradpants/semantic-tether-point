@@ -1,0 +1,12 @@
+{
+  "tetherAnchor": {
+    "group": "origin | meaning | verification",
+    "type": "string",
+    "sourceSystem": "string",
+    "sourceLocation": "string",
+    "anchorText": "string",
+    "structuredValue": "string",
+    "matchedSignals": [],
+    "traceReason": "string"
+  }
+}
