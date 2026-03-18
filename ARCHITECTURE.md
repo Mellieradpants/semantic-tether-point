@@ -1,41 +1,76 @@
+
+ARCHITECTURE.md
 Semantic Tether Point Architecture
 
 Goal
-Ensure AI outputs remain anchored to verifiable source signals.
+
+Keep all outputs tied directly to source text.
+
+The system only outputs what can be traced to a specific anchor.
 
 Problem
-Large language models often summarize or interpret text without preserving the path from source to interpretation.
 
-Semantic Tether Point requires each interpretation to remain tied to a specific anchor.
+AI systems often produce summaries or explanations without showing where the information came from.
+
+This breaks traceability and allows meaning to drift away from the source.
+
+Core Rule
+
+Every output must:
+
+point to a specific source anchor
+
+only include what that anchor supports
+
+If the source does not support it, it is not included.
 
 Core Flow
 
 Document
 → Anchor Extraction
-→ Tethered Interpretation
+→ Feature Detection
+→ Constrained Restatement
 → Structured Output
 
 Anchor Types
 
-Quoted text
-Document sections
-Page numbers
-Timestamps
-Metadata fields
+An anchor is a direct reference to source content.
+
+Examples:
+
+quoted text
+
+document sections
+
+page numbers
+
+timestamps
+
+metadata fields
 
 Output Structure
 
+Each result includes three parts:
+
 Anchor
-Source location or quoted text
+Source text or location
 
 Observation
-What the anchor contains or represents
+What is explicitly present in the text
 
 Operational Meaning
-Plain-language explanation derived from the anchor
+Plain-language restatement of the same content
+
+System Behavior
+
+anchors are identified before any output is generated
+
+all outputs must link to an anchor
+
+no output may include information not present in the anchor
+
+if no valid anchor exists, no output is produced
 
 Design Principle
 
-Interpretation must always point back to its anchor.
-
-If an interpretation cannot identify its source anchor, it should not be produced.
+If it cannot be traced to the source, it is not included
