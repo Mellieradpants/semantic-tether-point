@@ -1,32 +1,78 @@
+Semantic Tether Point
 Experimental Architecture
 
-What This Project Explores
+What This Project Does
 
-Semantic Tether Point explores a simple constraint for AI systems:
+Semantic Tether Point tests a simple rule:
 
-Interpretation must remain connected to a verifiable source anchor.
+Every output must stay tied to the exact source text.
 
-When an interpretation becomes uncertain or detached from its source, the system must return to the last verified tether point before continuing analysis.
+If something cannot be traced back to the source, it should not be included.
 
-This repository contains a minimal prototype demonstrating this behavior using structured anchors and tethered interpretation.
-
-
-
-# Semantic Tether Point
 Project Summary
 
-Semantic Tether Point is an experimental AI architecture rule designed to prevent semantic drift in language models.
+Semantic Tether Point is a small system that prevents meaning from drifting away from the original text.
 
-The core idea is simple:
+It does this by requiring every output to:
 
-Interpretation must remain tethered to a verifiable source anchor.
+point to a specific piece of source text
 
-If interpretation becomes uncertain or detached from its source, the system must return to the last verified tether point before continuing analysis.
+only include what that text supports
 
-This repository contains a minimal prototype demonstrating that behavior using anchored text references and structured output.
+There is no free summarizing, guessing, or adding extra meaning.
 
-Example Output
+Core Rule
 
+Every output must meet both conditions:
+
+It must link to a clear source anchor
+
+It must not include anything the anchor does not support
+
+If the source text does not support it, the system does not output it.
+
+What “Anchor” Means
+
+An anchor is the exact piece of source information the output comes from.
+
+Examples:
+
+a quote
+
+a document section
+
+a page reference
+
+a timestamp
+
+a metadata field
+
+All outputs must be tied directly to one of these.
+
+How the System Works
+
+The system follows a simple pipeline:
+
+Document
+→ find anchor
+→ detect what is explicitly in the text
+→ restate it in plain language
+→ link the result back to the anchor
+
+There is no step where new meaning is added.
+
+Output Structure
+
+Each output includes three parts:
+
+Anchor
+The exact source text or location
+
+Observation
+What is explicitly present in the text (words, requirements, conditions)
+
+Operational Meaning
+A plain-language restatement of the same text without adding new information
 {
   "document": "example-policy.txt",
   "analysis": [
@@ -36,8 +82,8 @@ Example Output
         "location": "Section 3",
         "text": "Applicants must submit documentation within 30 days."
       },
-      "observation": "A strict submission deadline is defined.",
-      "operationalMeaning": "Anyone applying must provide the required documents within 30 days or the application may not be accepted."
+      "observation": "Includes a requirement ('must') and a time limit ('within 30 days').",
+      "operationalMeaning": "Applicants are required to submit documentation within 30 days."
     },
     {
       "anchor": {
@@ -45,67 +91,55 @@ Example Output
         "location": "Section 5",
         "text": "The agency may extend deadlines under exceptional circumstances."
       },
-      "observation": "Deadline extensions are allowed.",
-      "operationalMeaning": "The agency has discretion to allow more time if unusual conditions occur."
+      "observation": "Includes conditional language ('may') and a condition ('exceptional circumstances').",
+      "operationalMeaning": "The agency is allowed to extend deadlines when exceptional circumstances occur."
     }
   ]
 }
+Problem
 
-Semantic Tether Point is an experimental architecture for grounding AI outputs to explicit reference anchors. Instead of allowing models to summarize freely, the system requires every interpretation to remain tied to verifiable signals such as source text, timestamps, metadata, or document sections.
+AI systems often produce summaries or explanations that include details not clearly tied to the original source.
 
-The goal is to prevent semantic drift and make AI reasoning traceable.
+This makes it difficult to verify how the output was created.
 
-## Problem
+Solution
 
-Large language models often summarize or interpret text without maintaining a clear connection to the original source. This can lead to meaning drift and makes it difficult to verify how conclusions were produced.
+Keep every output tied to the source text.
 
-Semantic Tether Point explores a simple rule: interpretation must stay tethered to its source.
+no added facts
 
-## Core Idea
+no hidden assumptions
 
-Every AI output must include the anchor that produced it.
+no interpretation beyond what is written
 
-Examples of anchors:
+If it cannot be traced to the source, it is not included.
 
-- quoted text  
-- page numbers  
-- timestamps  
-- metadata fields  
-- document section IDs  
+Why This Matters
 
-## Basic Pipeline
+Users can see exactly where each part of the output comes from.
 
-Document  
-→ anchor extraction  
-→ tethered interpretation  
-→ output linked to anchors  
+This makes the system:
 
-## Example Output Structure
+easier to check
 
-Anchor  
-source location or quote
+easier to trust
 
-Observation  
-what changed or what is present
+easier to use in high-accuracy environments
 
-Operational Meaning  
-plain-language explanation tied to the anchor
+Potential Uses
 
-## Why This Matters
+policy analysis
 
-Anchored reasoning allows users to trace how AI arrived at a conclusion. This improves transparency and reliability in environments where meaning matters.
+contracts
 
-## Potential Uses
+legislation
 
-- policy analysis  
-- contracts  
-- legislation  
-- journalism  
-- technical documentation  
+journalism
 
-## Status
+technical documentation
 
-Early prototype and architecture exploration.
+Status
 
-prototype now includes drift detection.
+Early prototype.
 
+Includes basic drift control by requiring all outputs to stay anchored to source text.
