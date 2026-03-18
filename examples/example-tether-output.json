@@ -1,23 +1,32 @@
 {
-  "document": "examples/example-policy.txt",
   "analysis": [
     {
-      "anchor": {
-        "type": "quote",
-        "location": "Section 3",
-        "text": "Applicants must submit documentation within 30 days."
+      "tetherAnchor": {
+        "group": "meaning",
+        "type": "text_span",
+        "sourceSystem": "semantic_tether_engine",
+        "sourceLocation": "line_1",
+        "anchorText": "Applicants must submit documentation within 30 days.",
+        "structuredValue": "Applicants are required to submit documentation within 30 days.",
+        "matchedSignals": ["must"],
+        "traceReason": "Includes a requirement ('must'). Includes a time constraint."
       },
-      "observation": "Includes a requirement ('must') and a time limit ('within 30 days').",
-      "operationalMeaning": "Applicants are required to submit documentation within 30 days."
+      "driftDetected": false,
+      "status": "ok"
     },
     {
-      "anchor": {
-        "type": "quote",
-        "location": "Section 5",
-        "text": "The agency may extend deadlines under exceptional circumstances."
+      "tetherAnchor": {
+        "group": "meaning",
+        "type": "text_span",
+        "sourceSystem": "semantic_tether_engine",
+        "sourceLocation": "line_3",
+        "anchorText": "The agency may extend deadlines under exceptional circumstances.",
+        "structuredValue": "The agency is allowed to extend deadlines under exceptional circumstances.",
+        "matchedSignals": ["may"],
+        "traceReason": "Includes permission ('may'). Includes a condition."
       },
-      "observation": "Includes permission or discretion ('may') and a condition ('under exceptional circumstances').",
-      "operationalMeaning": "The agency is allowed to extend deadlines under exceptional circumstances."
+      "driftDetected": false,
+      "status": "ok"
     }
   ]
 }
