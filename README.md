@@ -143,3 +143,19 @@ Status
 Early prototype.
 
 Includes basic drift control by requiring all outputs to stay anchored to source text.
+
+Current Engine Output
+
+The current prototype outputs tetherAnchor objects using a shared structure.
+
+Each result includes:
+- group
+- type
+- sourceSystem
+- sourceLocation
+- anchorText
+- structuredValue
+- matchedSignals
+- traceReason
+
+This keeps all outputs in one consistent, traceable format.
