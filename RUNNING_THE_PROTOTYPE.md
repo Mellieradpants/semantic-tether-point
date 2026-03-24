@@ -25,7 +25,7 @@ Run the Prototype
 
 From the root of the repository:
 
-python real_tether_extractor_v2.py
+python real_tether_extractor_v2.py <document>
 
 Current Output Format
 
@@ -38,7 +38,7 @@ type
 sourceSystem
 sourceLocation
 anchorText
-structuredValue
+sourceDerivedText
 matchedSignals
 traceReason
 driftDetected
@@ -54,7 +54,7 @@ Source text or location
 observation
 What is explicitly present in the text
 
-operationalMeaning
+sourceDerivedText
 Plain-language restatement of the same content without adding or altering information
 
 Example Flow
@@ -87,13 +87,3 @@ traceable outputs
 constraint-based processing
 prevention of meaning drift
 consistent, repeatable behavior
-
-Notes
-
-This version:
-
-removes interpretation as a processing concept
-removes metaphor-based language
-replaces soft guidance with deterministic rules
-enforces pass/fail constraint behavior
-
