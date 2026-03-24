@@ -38,12 +38,20 @@ def extract_explicit_signal_anchors(document_text: str):
         if "cannot" in line_lower or "prohibited" in line_lower:
             matched_signals.append("prohibition")
 
-        if matched_signals:
-            anchors.append({
-                "line": i + 1,
-                "text": line,
-                "matchedSignals": matched_signals
-            })
+        if not matched_signals:
+            continue
+
+        anchor_type = "text_span"
+
+        if line_lower.startswith("section "):
+            anchor_type = "section"
+
+        anchors.append({
+            "line": i + 1,
+            "text": line,
+            "type": anchor_type,
+            "matchedSignals": matched_signals
+        })
 
     return anchors
 
@@ -58,7 +66,7 @@ def build_traceable_output(document_path: Path):
         result = {
             "tetherAnchor": {
                 "group": "meaning",
-                "type": "text_span",
+                "type": anchor["type"],
                 "sourceSystem": "traceability_constraint_system",
                 "sourceLocation": f"line_{anchor['line']}",
                 "anchorText": anchor["text"],
@@ -96,3 +104,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+        
+
+
+
+  
