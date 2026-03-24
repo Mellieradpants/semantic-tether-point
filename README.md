@@ -1,5 +1,4 @@
-Traceability-Constraint-System
-
+Traceability Constraint System
 Experimental Architecture
 
 What This System Does
@@ -62,33 +61,33 @@ The exact source text or location
 Observation
 What is explicitly present in the text (words, requirements, conditions)
 
-Operational Meaning
-A plain-language restatement of the same text without adding new information
+Source Derived Text
+A restatement that preserves the exact meaning of the source text without adding or altering information
 
 Example:
 
 {
-"document": "example-policy.txt",
-"analysis": [
-{
-"anchor": {
-"type": "quote",
-"location": "Section 3",
-"text": "Applicants must submit documentation within 30 days."
-},
-"observation": "Includes a requirement ('must') and a time limit ('within 30 days').",
-"operationalMeaning": "Applicants must submit documentation within 30 days."
-},
-{
-"anchor": {
-"type": "quote",
-"location": "Section 5",
-"text": "The agency may extend deadlines under exceptional circumstances."
-},
-"observation": "Includes conditional language ('may') and a condition ('exceptional circumstances').",
-"operationalMeaning": "The agency may extend deadlines under exceptional circumstances."
-}
-]
+  "document": "example-policy.txt",
+  "analysis": [
+    {
+      "anchor": {
+        "type": "quote",
+        "location": "Section 3",
+        "text": "Applicants must submit documentation within 30 days."
+      },
+      "observation": "Includes a requirement ('must') and a time constraint ('within 30 days').",
+      "sourceDerivedText": "Applicants must submit documentation within 30 days."
+    },
+    {
+      "anchor": {
+        "type": "quote",
+        "location": "Section 5",
+        "text": "The agency may extend deadlines under exceptional circumstances."
+      },
+      "observation": "Includes conditional language ('may') and a condition ('under exceptional circumstances').",
+      "sourceDerivedText": "The agency may extend deadlines under exceptional circumstances."
+    }
+  ]
 }
 
 Problem
@@ -103,6 +102,7 @@ Require all outputs to remain anchored to source text.
 
 no added facts
 no hidden assumptions
+no inference
 no interpretation beyond what is explicitly stated
 
 If it cannot be traced to the source, it is not included.
@@ -142,8 +142,10 @@ type
 sourceSystem
 sourceLocation
 anchorText
-structuredValue
+sourceDerivedText
 matchedSignals
 traceReason
+driftDetected
+status
 
-All outputs follow a traceable, structured format.
+All outputs follow a traceable, structured format
