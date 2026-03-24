@@ -57,7 +57,7 @@ Output Generation
 
 Each result follows a structured format:
 
-Anchor → Observation → Operational Meaning
+Anchor → Observation → Source Derived Text
 
 All fields must be traceable to the anchor.
 
@@ -78,8 +78,8 @@ Source text or reference
 Observation
 What is explicitly present in the text
 
-Operational Meaning
-Plain-language restatement of the same content
+Source Derived Text
+Plain-language restatement of the same content without adding or altering information
 
 Pipeline Flow
 
