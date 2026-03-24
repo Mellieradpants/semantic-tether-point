@@ -105,8 +105,8 @@ def build_traceable_output(document_path: Path):
         result = {
             "tetherAnchor": {
                 "group": "meaning",
-                "type": anchor["type"],"sourceSystem":
-                "prototype_extractor",
+                "type": anchor["type"],
+                "sourceSystem": "prototype_extractor",
                 "sourceSystem": "traceability_constraint_system",
                 "sourceLocation": f"line_{anchor['line']}",
                 "anchorText": anchor["text"],
