@@ -3,6 +3,23 @@ import json
 from pathlib import Path
 
 
+def is_metadata_field(line: str) -> bool:
+    if ":" not in line:
+        return False
+
+    label, value = line.split(":", 1)
+    label = label.strip()
+    value = value.strip()
+
+    if not label or not value:
+        return False
+
+    if " " in label:
+        return False
+
+    return True
+
+
 def extract_explicit_signal_anchors(document_text: str):
     anchors = []
     lines = [line.strip() for line in document_text.splitlines()]
@@ -30,6 +47,8 @@ def extract_explicit_signal_anchors(document_text: str):
 
         if line_lower.startswith("section "):
             anchor_type = "section"
+        elif is_metadata_field(line):
+            anchor_type = "metadata_field"
 
         anchors.append({
             "line": i + 1,
@@ -89,3 +108,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+  
