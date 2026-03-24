@@ -76,4 +76,4 @@ or no output is produced
 
 Core Rule
 
-If it cannot be traced to the source, it is not included
+If it cannot be traced to the source, it is not included.
