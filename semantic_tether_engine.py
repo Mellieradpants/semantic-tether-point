@@ -1,70 +1,98 @@
+"""
+Traceability Constraint System — Core Engine
+
+Purpose:
+Produce outputs that are directly traceable to explicit source text.
+
+Constraints:
+- no inference
+- no added information
+- no narrative
+- no unstated meaning
+
+If content is not supported by source text, it is not included.
+"""
+
+import sys
 import json
+from pathlib import Path
 
-anchors = [
-    {
-        "line": 1,
-        "text": "Applicants must submit documentation within 30 days.",
-        "matchedSignals": ["must"]
-    },
-    {
-        "line": 3,
-        "text": "The agency may extend deadlines under exceptional circumstances.",
-        "matchedSignals": ["may"]
+
+def extract_explicit_signal_anchors(document_text: str):
+    anchors = []
+    lines = [line.strip() for line in document_text.splitlines()]
+
+    for i, line in enumerate(lines):
+        if not line:
+            continue
+
+        line_lower = line.lower()
+        matched_signals = []
+
+        if "must" in line_lower or "shall" in line_lower or "required" in line_lower:
+            matched_signals.append("obligation")
+
+        if "may" in line_lower:
+            matched_signals.append("permission")
+
+        if "cannot" in line_lower or "prohibited" in line_lower:
+            matched_signals.append("prohibition")
+
+        if matched_signals:
+            anchors.append({
+                "line": i + 1,
+                "text": line,
+                "matchedSignals": matched_signals
+            })
+
+    return anchors
+
+
+def build_traceable_output(document_path: Path):
+    text = document_path.read_text(encoding="utf-8")
+    anchors = extract_explicit_signal_anchors(text)
+
+    results = []
+
+    for anchor in anchors:
+        result = {
+            "tetherAnchor": {
+                "group": "meaning",
+                "type": "text_span",
+                "sourceSystem": "traceability_constraint_system",
+                "sourceLocation": f"line_{anchor['line']}",
+                "anchorText": anchor["text"],
+                "sourceDerivedText": anchor["text"],
+                "matchedSignals": anchor["matchedSignals"],
+                "traceReason": "Matched explicit signal language in source text"
+            },
+            "driftDetected": False,
+            "status": "ok"
+        }
+
+        results.append(result)
+
+    return {
+        "document": str(document_path),
+        "anchorCount": len(anchors),
+        "analysis": results
     }
-]
 
-analysis = []
 
-for anchor in anchors:
-    text = anchor["text"].lower()
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python semantic_tether_engine.py <document>")
+        sys.exit(1)
 
-    # observation (what is explicitly present)
-    observation_parts = []
+    document_path = Path(sys.argv[1])
 
-    if "must" in text:
-        observation_parts.append("Includes a requirement ('must').")
+    if not document_path.exists():
+        print(f"Error: file not found: {document_path}")
+        sys.exit(1)
 
-    if "may" in text:
-        observation_parts.append("Includes permission ('may').")
+    output = build_traceable_output(document_path)
+    print(json.dumps(output, indent=2))
 
-    if "within" in text:
-        observation_parts.append("Includes a time constraint.")
 
-    if "under" in text:
-        observation_parts.append("Includes a condition.")
-
-    observation = " ".join(observation_parts)
-
-    # operational meaning (no added info)
-    if "must submit documentation within 30 days" in text:
-        operational = "Applicants are required to submit documentation within 30 days."
-    elif "may extend deadlines under exceptional circumstances" in text:
-        operational = "The agency is allowed to extend deadlines under exceptional circumstances."
-    else:
-        operational = anchor["text"]
-
-    # drift check (simple)
-    drift = False
-
-    result = {
-        "tetherAnchor": {
-            "group": "meaning",
-            "type": "text_span",
-            "sourceSystem": "semantic_tether_engine",
-            "sourceLocation": f"line_{anchor['line']}",
-            "anchorText": anchor["text"],
-            "structuredValue": operational,
-            "matchedSignals": anchor["matchedSignals"],
-            "traceReason": observation
-        },
-        "driftDetected": drift,
-        "status": "ok"
-    }
-
-    analysis.append(result)
-
-output = {
-    "analysis": analysis
-}
-
-print(json.dumps(output, indent=2))
+if __name__ == "__main__":
+    main()
