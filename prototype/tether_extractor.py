@@ -1,91 +1,73 @@
 import json
 from pathlib import Path
 
-document_path = Path("examples/example-policy.txt")
-document = document_path.read_text()
 
-anchors = [
-    {
-        "type": "quote",
-        "location": "Section 3",
-        "text": "Applicants must submit documentation within 30 days."
-    },
-    {
-        "type": "quote",
-        "location": "Section 5",
-        "text": "The agency may extend deadlines under exceptional circumstances."
-    }
-]
+def extract_explicit_signal_anchors(document_text: str):
+    anchors = []
+    lines = [line.strip() for line in document_text.splitlines()]
 
-analysis = []
+    for i, line in enumerate(lines):
+        if not line:
+            continue
 
+        line_lower = line.lower()
+        matched_signals = []
 
-def build_observation(anchor_text: str) -> str:
-    anchor_text_lower = anchor_text.lower()
+        if "must" in line_lower or "shall" in line_lower or "required" in line_lower:
+            matched_signals.append("obligation")
 
-    features = []
+        if "may" in line_lower:
+            matched_signals.append("permission")
 
-    if "must" in anchor_text_lower:
-        features.append("Includes a requirement ('must').")
+        if "cannot" in line_lower or "prohibited" in line_lower:
+            matched_signals.append("prohibition")
 
-    if "may" in anchor_text_lower:
-        features.append("Includes permission or discretion ('may').")
+        if matched_signals:
+            anchors.append({
+                "line": i + 1,
+                "text": line,
+                "matchedSignals": matched_signals
+            })
 
-    if "within 30 days" in anchor_text_lower:
-        features.append("Includes a time limit ('within 30 days').")
-
-    if "exceptional circumstances" in anchor_text_lower:
-        features.append("Includes a condition ('exceptional circumstances').")
-
-    if not features:
-        return "No explicit feature detected."
-
-    return " ".join(features)
+    return anchors
 
 
-def build_operational_meaning(anchor_text: str) -> str:
-    if anchor_text == "Applicants must submit documentation within 30 days.":
-        return "Applicants are required to submit documentation within 30 days."
+def build_analysis(document_path: Path):
+    text = document_path.read_text(encoding="utf-8")
+    anchors = extract_explicit_signal_anchors(text)
 
-    if anchor_text == "The agency may extend deadlines under exceptional circumstances.":
-        return "The agency is allowed to extend deadlines under exceptional circumstances."
+    analysis = []
 
-    return "No plain-language restatement available."
+    for anchor in anchors:
+        result = {
+            "tetherAnchor": {
+                "group": "meaning",
+                "type": "text_span",
+                "sourceSystem": "prototype_extractor",
+                "sourceLocation": f"line_{anchor['line']}",
+                "anchorText": anchor["text"],
+                "sourceDerivedText": anchor["text"],
+                "matchedSignals": anchor["matchedSignals"],
+                "traceReason": "Matched explicit signal language in source text"
+            },
+            "driftDetected": False,
+            "status": "ok"
+        }
 
+        analysis.append(result)
 
-def detect_drift(anchor_text: str, operational_meaning: str) -> bool:
-    allowed_pairs = {
-        "Applicants must submit documentation within 30 days.": "Applicants are required to submit documentation within 30 days.",
-        "The agency may extend deadlines under exceptional circumstances.": "The agency is allowed to extend deadlines under exceptional circumstances."
-    }
-
-    expected = allowed_pairs.get(anchor_text)
-    if expected is None:
-        return True
-
-    return operational_meaning != expected
-
-
-for anchor in anchors:
-    observation = build_observation(anchor["text"])
-    operational = build_operational_meaning(anchor["text"])
-    drift_detected = detect_drift(anchor["text"], operational)
-
-    result = {
-        "anchor": anchor,
-        "observation": observation,
-        "operationalMeaning": operational,
-        "driftDetected": drift_detected,
-        "recoveryAction": "Output blocked: text not fully supported by anchor."
-        if drift_detected
-        else "Anchor check passed."
+    return {
+        "document": str(document_path),
+        "anchorCount": len(anchors),
+        "analysis": analysis
     }
 
-    analysis.append(result)
 
-output = {
-    "document": str(document_path),
-    "analysis": analysis
-}
+if __name__ == "__main__":
+    document_path = Path("examples/example-policy.txt")
+    output = build_analysis(document_path)
+    print(json.dumps(output, indent=2))
 
-print(json.dumps(output, indent=2))
+    
+       
+
