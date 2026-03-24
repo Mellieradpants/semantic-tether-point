@@ -1,16 +1,5 @@
 """
 Traceability Constraint System — Core Engine
-
-Purpose:
-Produce outputs that are directly traceable to explicit source text.
-
-Constraints:
-- no inference
-- no added information
-- no narrative
-- no unstated meaning
-
-If content is not supported by source text, it is not included.
 """
 
 import re
@@ -52,6 +41,16 @@ def contains_timestamp(line: str) -> bool:
     ])
 
 
+def contains_structured_identifier(line: str) -> bool:
+    id_pattern = r"\b(id|no\.?|number|#)\b"
+    code_pattern = r"\b[A-Z]{2,}-?\d+\b"
+
+    return any([
+        re.search(id_pattern, line.lower()),
+        re.search(code_pattern, line)
+    ])
+
+
 def extract_explicit_signal_anchors(document_text: str):
     anchors = []
     lines = [line.strip() for line in document_text.splitlines()]
@@ -83,6 +82,8 @@ def extract_explicit_signal_anchors(document_text: str):
             anchor_type = "metadata_field"
         elif contains_timestamp(line):
             anchor_type = "timestamp"
+        elif contains_structured_identifier(line):
+            anchor_type = "structured_identifier"
 
         anchors.append({
             "line": i + 1,
