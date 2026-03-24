@@ -13,7 +13,7 @@
       "type": "array",
       "items": "string"
     },
-    "systemTraceReason": "string"
+    "traceReason": "string"
   },
   "driftDetected": "boolean",
   "status": {
