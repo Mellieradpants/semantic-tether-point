@@ -1,7 +1,18 @@
 {
   "tetherAnchor": {
     "group": {
-      "type": "string",
+      "type": {
+  "type": "string",
+  "allowedValues": [
+    "text_span",
+    "section",
+    "timestamp",
+    "metadata_field",
+    "structured_identifier",
+    "page_reference",
+    "quote"
+  ]
+}
       "allowedValues": ["origin", "meaning", "verification"]
     },
     "type": "string",
