@@ -1,3 +1,4 @@
+import re
 import sys
 import json
 from pathlib import Path
@@ -18,6 +19,22 @@ def is_metadata_field(line: str) -> bool:
         return False
 
     return True
+
+
+def contains_timestamp(line: str) -> bool:
+    month_pattern = r"\b(january|february|march|april|may|june|july|august|september|october|november|december)\b"
+    weekday_pattern = r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b"
+    iso_date_pattern = r"\b\d{4}-\d{2}-\d{2}\b"
+    time_pattern = r"\b\d{1,2}:\d{2}\b|\b\d{1,2}\s?(am|pm)\b"
+
+    line_lower = line.lower()
+
+    return any([
+        re.search(month_pattern, line_lower),
+        re.search(weekday_pattern, line_lower),
+        re.search(iso_date_pattern, line),
+        re.search(time_pattern, line_lower)
+    ])
 
 
 def extract_explicit_signal_anchors(document_text: str):
@@ -49,6 +66,8 @@ def extract_explicit_signal_anchors(document_text: str):
             anchor_type = "section"
         elif is_metadata_field(line):
             anchor_type = "metadata_field"
+        elif contains_timestamp(line):
+            anchor_type = "timestamp"
 
         anchors.append({
             "line": i + 1,
@@ -108,4 +127,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
+      
+ 
