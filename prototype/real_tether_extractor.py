@@ -1,3 +1,7 @@
+"""
+Traceability Constraint System — Core Engine
+"""
+
 import re
 import sys
 import json
@@ -37,6 +41,16 @@ def contains_timestamp(line: str) -> bool:
     ])
 
 
+def contains_structured_identifier(line: str) -> bool:
+    id_pattern = r"\b(id|no\.?|number|#)\b"
+    code_pattern = r"\b[A-Z]{2,}-?\d+\b"
+
+    return any([
+        re.search(id_pattern, line.lower()),
+        re.search(code_pattern, line)
+    ])
+
+
 def extract_explicit_signal_anchors(document_text: str):
     anchors = []
     lines = [line.strip() for line in document_text.splitlines()]
@@ -68,6 +82,8 @@ def extract_explicit_signal_anchors(document_text: str):
             anchor_type = "metadata_field"
         elif contains_timestamp(line):
             anchor_type = "timestamp"
+        elif contains_structured_identifier(line):
+            anchor_type = "structured_identifier"
 
         anchors.append({
             "line": i + 1,
@@ -79,18 +95,19 @@ def extract_explicit_signal_anchors(document_text: str):
     return anchors
 
 
-def build_analysis(document_path: Path):
+def build_traceable_output(document_path: Path):
     text = document_path.read_text(encoding="utf-8")
     anchors = extract_explicit_signal_anchors(text)
 
-    analysis = []
+    results = []
 
     for anchor in anchors:
         result = {
             "tetherAnchor": {
                 "group": "meaning",
-                "type": anchor["type"],
-                "sourceSystem": "prototype_extractor",
+                "type": anchor["type"],"sourceSystem":
+                "prototype_extractor",
+                "sourceSystem": "traceability_constraint_system",
                 "sourceLocation": f"line_{anchor['line']}",
                 "anchorText": anchor["text"],
                 "sourceDerivedText": anchor["text"],
@@ -101,18 +118,18 @@ def build_analysis(document_path: Path):
             "status": "ok"
         }
 
-        analysis.append(result)
+        results.append(result)
 
     return {
         "document": str(document_path),
         "anchorCount": len(anchors),
-        "analysis": analysis
+        "analysis": results
     }
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python prototype/real_tether_extractor.py <document>")
+        print("Usage: python semantic_tether_engine.py <document>")
         sys.exit(1)
 
     document_path = Path(sys.argv[1])
@@ -121,11 +138,9 @@ def main():
         print(f"Error: file not found: {document_path}")
         sys.exit(1)
 
-    output = build_analysis(document_path)
+    output = build_traceable_output(document_path)
     print(json.dumps(output, indent=2))
 
 
 if __name__ == "__main__":
     main()
-      
- 
