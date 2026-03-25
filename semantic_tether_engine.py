@@ -51,6 +51,22 @@ def contains_structured_identifier(line: str) -> bool:
     ])
 
 
+def extract_page_reference(line: str):
+    page_patterns = [
+        r"\b[Pp]age\s+\d+\b",
+        r"\b[Pp]ages\s+\d+\s*-\s*\d+\b",
+        r"\b[Pp]\.\s*\d+\b",
+        r"\b[Pp][Pp]\.\s*\d+\s*-\s*\d+\b",
+    ]
+
+    for pattern in page_patterns:
+        match = re.search(pattern, line)
+        if match:
+            return match.group(0)
+
+    return None
+
+
 def extract_explicit_signal_anchors(document_text: str):
     anchors = []
     lines = [line.strip() for line in document_text.splitlines()]
@@ -85,12 +101,19 @@ def extract_explicit_signal_anchors(document_text: str):
         elif contains_structured_identifier(line):
             anchor_type = "structured_identifier"
 
-        anchors.append({
+        page_reference = extract_page_reference(line)
+
+        anchor = {
             "line": i + 1,
             "text": line,
             "type": anchor_type,
             "matchedSignals": matched_signals
-        })
+        }
+
+        if page_reference:
+            anchor["pageReference"] = page_reference
+
+        anchors.append(anchor)
 
     return anchors
 
@@ -102,17 +125,22 @@ def build_traceable_output(document_path: Path):
     results = []
 
     for anchor in anchors:
+        tether_anchor = {
+            "group": "meaning",
+            "type": anchor["type"],
+            "sourceSystem": "traceability_constraint_system",
+            "sourceLocation": f"line_{anchor['line']}",
+            "anchorText": anchor["text"],
+            "sourceDerivedText": anchor["text"],
+            "matchedSignals": anchor["matchedSignals"],
+            "traceReason": "Matched explicit signal language in source text"
+        }
+
+        if "pageReference" in anchor:
+            tether_anchor["pageReference"] = anchor["pageReference"]
+
         result = {
-            "tetherAnchor": {
-                "group": "meaning",
-                "type": anchor["type"],
-                "sourceSystem": "traceability_constraint_system",
-                "sourceLocation": f"line_{anchor['line']}",
-                "anchorText": anchor["text"],
-                "sourceDerivedText": anchor["text"],
-                "matchedSignals": anchor["matchedSignals"],
-                "traceReason": "Matched explicit signal language in source text"
-            },
+            "tetherAnchor": tether_anchor,
             "driftDetected": False,
             "status": "ok"
         }
@@ -143,3 +171,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+   
+    
+  
