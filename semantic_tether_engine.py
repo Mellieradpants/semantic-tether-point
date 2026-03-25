@@ -129,6 +129,7 @@ def build_traceable_output(document_path: Path):
             "group": "meaning",
             "type": anchor["type"],
             "sourceSystem": "traceability_constraint_system",
+            "executionContext": "prototype_extractor",
             "sourceLocation": f"line_{anchor['line']}",
             "anchorText": anchor["text"],
             "sourceDerivedText": anchor["text"],
