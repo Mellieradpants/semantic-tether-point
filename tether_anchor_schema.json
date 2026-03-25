@@ -12,14 +12,15 @@
         "timestamp",
         "metadata_field",
         "structured_identifier",
-        "page_reference",
         "quote"
       ]
     },
     "sourceSystem": "string",
+    "executionContext": "string",
     "sourceLocation": "string",
     "anchorText": "string",
     "sourceDerivedText": "string",
+    "pageReference": "string",
     "matchedSignals": {
       "type": "array",
       "items": "string"
