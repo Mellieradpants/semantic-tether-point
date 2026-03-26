@@ -1,29 +1,4 @@
 Traceability Constraint System
-
-A constraint-based engine that converts text into traceable outputs with no added meaning.
-
-System Flow
-
-Input text → extract anchors → generate source-derived statements → link outputs to source → detect drift
-
-Example
-
-Input  
-"Applicants must submit documentation within 30 days."
-
-Output  
-- Anchor: "Applicants must submit documentation within 30 days."  
-- Observation: contains requirement ("must") and time constraint ("within 30 days")  
-- SourceDerivedText: "Applicants must submit documentation within 30 days."  
-- Status: traceable  
-
-Core Rule  
-If it cannot be traced to source text, it is not included.
-
-
-
-
-Traceability Constraint System
 Experimental Architecture
 
 What This System Does
