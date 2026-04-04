@@ -213,8 +213,31 @@ def analyze_anchor(anchor: dict):
     return parse
 
 
-def contains_precision_claim(text: str):
-    return bool(re.search(r"\b\d+(\.\d+)?%?\b", text))
+   def contains_precision_claim(text: str):
+    # Match percentages
+    percent_pattern = r"\b\d+(\.\d+)?%\b"
+
+    # Match large or specific numeric stats (exclude simple time units)
+    number_pattern = r"\b\d{2,}\b"
+
+    # Time-related words (should NOT trigger precision flags)
+    time_words = ["day", "days", "month", "months", "year", "years", "annually"]
+
+    text_lower = text.lower()
+
+    # Check percentage first
+    if re.search(percent_pattern, text):
+        return True
+
+    # Check numeric values but exclude time phrases
+    numbers = re.findall(number_pattern, text)
+    if numbers:
+        for word in time_words:
+            if word in text_lower:
+                return False
+        return True
+
+    return False
 
 
 def review_parse_output(parse: dict, tether_anchor: dict):
