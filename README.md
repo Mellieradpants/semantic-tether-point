@@ -2,27 +2,36 @@
 
 ## Overview
 
-The Traceability Constraint System is a deterministic parsing engine designed to extract structured, traceable signals from source text.
+The Traceability Constraint System is a deterministic parsing and constraint engine designed to extract structured, traceable signals from source text.
 
-The system enforces a single rule:
+It processes real legislative XML (Washington State bill text) and converts it into normalized text and structured outputs representing obligations, permissions, conditions, and constraints.
 
-Every output must remain directly traceable to explicit source text.
+Every output is directly tied to explicit source text.  
+If it cannot be traced to the source, it is not included.
 
-If a piece of information cannot be traced to the source, it is not included in the output.
-
-This repository contains a backend processing pipeline, not a user-facing application.
+This repository contains the core engine layer of a larger system.
 
 ---
 
-## What This System Does
+## System Role
 
-The system processes real legislative XML (Washington State bill text) and converts it into structured outputs that preserve:
+This repository is the core processing engine that powers higher-level tools, including the Washington Civic Dashboard.
 
-- source anchoring
-- explicit meaning
-- traceable structure
+It is responsible for:
 
-There is no summarizing, guessing, or adding meaning beyond what is written.
+- parsing source text
+- enforcing traceability constraints
+- extracting structured signals
+- producing deterministic, source-linked outputs
+
+This is not a user-facing application.
+
+It is designed to be integrated as a backend engine into systems such as:
+
+- Washington Civic Dashboard
+- Meaning Buddy
+- Origin Maps
+- Verification systems
 
 ---
 
@@ -35,19 +44,18 @@ Every output must meet both conditions:
 
 If the source text does not support it, the system does not output it.
 
----
-
+There is no summarizing, guessing, or adding meaning beyond what is written.
 ## What “Anchor” Means
 
 An anchor is the exact piece of source information the output is derived from.
 
 Examples include:
 
-- text span (quote)
-- document section
-- structured identifier
-- metadata field
-- timestamp
+- text span (quote)  
+- document section  
+- structured identifier  
+- metadata field  
+- timestamp  
 
 All outputs must be tied directly to one of these.
 
@@ -55,108 +63,77 @@ All outputs must be tied directly to one of these.
 
 ## Pipeline Architecture
 
-The system follows a constrained processing pipeline:
-
 Fetch → Adapter → Parser → Structured Output
 
-### 1. Fetch Layer
+### Fetch Layer
 - Retrieves live legislative XML (bill body, not metadata)
 - Writes raw response as bytes to preserve encoding integrity
 
-### 2. Adapter Layer
+### Adapter Layer
 - Converts XML into normalized text blocks
-- Supports real bill structure:
-  - BillBody
-  - BillTitle
-  - Sections / paragraphs
-- Handles encoding issues (BOM, malformed leading bytes)
+- Supports BillBody, BillTitle, Sections
+- Handles encoding issues (BOM, malformed bytes)
 
-### 3. Parser Layer
-- Detects explicit signal language:
+### Parser Layer
+- Detects:
   - obligation (shall, must)
   - permission (may)
   - conditions (if, when)
-- Produces structured outputs with:
-  - tether anchors
-  - signal classification
-  - trace reasoning
 
-### 4. Output
+### Output
 - Structured JSON
-- Fully traceable to source text
-- Deterministic (same input → same output)
-
----
-
-## Output Structure
-
-Each result includes:
-
-- tetherAnchor  
-  - group  
-  - type  
-  - sourceSystem  
-  - sourceLocation  
-  - anchorText  
-  - sourceDerivedText  
-  - matchedSignals  
-  - traceReason  
-
-- parse (structured breakdown)  
-- missingSignals  
-- controlFlags  
-- driftDetected  
-- status  
-
-All outputs remain directly tied to source text.
-
----
+- Fully traceable
+- Deterministic
 
 ## Design Principles
 
 - No inference beyond explicit source text  
 - No added facts or assumptions  
-- Deterministic output behavior  
-- Full traceability to source  
-- Strict separation of layers (fetch, adapter, parser)
+- Deterministic output  
+- Full traceability  
+- Separation of layers  
 
 ---
 
 ## Reliability Safeguards
 
-- XML is processed as raw bytes to prevent encoding corruption  
-- UTF-8 BOM and malformed leading bytes are removed before parsing  
-- Normalized output is deleted before regeneration to prevent stale data reuse  
-- Pipeline fails loudly if parsing fails  
+- XML processed as raw bytes  
+- BOM and malformed bytes removed  
+- Normalized file deleted before regeneration  
+- Pipeline fails loudly on errors  
 
 ---
 
-## Problem
+## Project Structure
 
-Many systems generate outputs that include details not directly tied to the source.
-
-This makes verification difficult and introduces hidden assumptions.
-
----
-
-## Solution
-
-This system enforces strict source anchoring:
-
-- No inference  
-- No interpretation beyond explicit text  
-- No unsupported output  
-
-If it cannot be traced to the source, it is not included.
+fetch_wa_legislation.py  
+wa_legislature_adapter.py  
+test_live_wa_adapter.py  
+semantic_tether_engine.py  
+traceability_parser.py  
 
 ---
 
-## Why This Matters
+## Status
 
-Each output can be verified against its source.
+Engine: Functional  
+Data Source: Real legislative XML  
+Pipeline: Stable  
+Integration: In progress (Washington Civic Dashboard)
 
-This makes the system:
+---
 
-- auditable  
-- consistent  
-- suitable for
+## Role in the Civic Dashboard
+
+This engine is the backend processing layer.
+
+The dashboard:
+- sends data in  
+- receives structured output  
+
+The engine:
+- parses  
+- enforces constraints  
+- extracts signals  
+
+The dashboard only displays results.
