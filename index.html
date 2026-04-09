@@ -657,6 +657,25 @@
       const text = await file.text();
       loadXml(text, file.name);
     });
+    <script>
+  // all your existing code stays the same
+
+  document.getElementById("demoBtn").addEventListener("click", () => {
+    // existing demo code
+  });
+
+  // 👇 ADD THIS HERE (bottom of script)
+  window.addEventListener("load", async () => {
+    try {
+      const res = await fetch("output_structured.json");
+      const data = await res.json();
+      loadJson(data, "output_structured.json");
+    } catch (e) {
+      console.log("No local JSON found yet");
+    }
+  });
+
+</script>
 
     document.getElementById("demoBtn").addEventListener("click", () => {
       loadJson({
