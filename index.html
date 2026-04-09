@@ -1,218 +1,477 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Legislative Explorer</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Legislative Explorer</title>
+  <style>
+    :root {
+      --bg: #0e0d0b;
+      --panel: #13120f;
+      --panel-2: #171511;
+      --line: #1f1c17;
+      --text: #c8c0a8;
+      --muted: #6f675a;
 
-<style>
-body {
-  margin:0;
-  background:#0E0D0B;
-  color:#C8C0A8;
-  font-family: Georgia, serif;
-}
+      --origin: #5d8a68;
+      --parse: #c8a86b;
+      --meaning: #a55a5a;
 
-.header {
-  padding:16px 20px;
-  border-bottom:1px solid #1A1816;
-  display:flex;
-  justify-content:space-between;
-}
-
-.title {
-  color:#C8A86B;
-  font-size:20px;
-}
-
-.sub {
-  font-size:10px;
-  color:#444;
-  letter-spacing:.1em;
-}
-
-.tabs {
-  display:flex;
-  border-bottom:1px solid #1A1816;
-}
-
-.tab {
-  flex:1;
-  text-align:center;
-  padding:10px;
-  font-size:11px;
-  letter-spacing:.12em;
-  cursor:pointer;
-  color:#444;
-}
-
-.tab.active {
-  color:#C8A86B;
-  border-bottom:2px solid #C8A86B;
-}
-
-.content {
-  padding:14px;
-}
-
-/* TREE */
-.node {
-  padding:6px;
-  cursor:pointer;
-}
-
-.node:hover { background:#1A1816; }
-
-.selected {
-  background:#2A2215;
-  border-left:2px solid #C8A86B;
-}
-
-.section { color:#C8A86B; }
-.subsection { color:#7BA7BC; }
-.clause { color:#9B8BB4; }
-
-/* TEXT */
-.text-box {
-  background:#141311;
-  border:1px solid #1E1C18;
-  padding:14px;
-  line-height:1.7;
-}
-
-/* SIGNALS */
-.label {
-  font-size:10px;
-  letter-spacing:.12em;
-  color:#555;
-  margin:10px 0 6px;
-}
-
-.block {
-  border-left:3px solid;
-  padding:10px;
-  margin-bottom:8px;
-  background:rgba(255,255,255,0.02);
-}
-
-.required { border-color:#C8A86B; }
-.allowed { border-color:#8BAF8B; }
-.prohibited { border-color:#B47B7B; }
-.timing { border-color:#9B8BB4; }
-</style>
-</head>
-
-<body>
-
-<div class="header">
-  <div class="title">Traceability Constraint System</div>
-  <div class="sub">LEGISLATIVE EXPLORER</div>
-</div>
-
-<div class="tabs">
-  <div class="tab active" onclick="setTab(0)">STRUCTURE</div>
-  <div class="tab" onclick="setTab(1)">TEXT</div>
-  <div class="tab" onclick="setTab(2)">SIGNALS</div>
-</div>
-
-<div class="content" id="content"></div>
-
-<script>
-let tab=0;
-let data=[];
-let selected=null;
-
-function setTab(i){
-  tab=i;
-  document.querySelectorAll(".tab").forEach((t,idx)=>{
-    t.classList.toggle("active",idx===i);
-  });
-  render();
-}
-
-function buildTree(units){
-  const map={}, roots=[];
-  units.forEach(u=>map[u.id]={...u,children:[]});
-  units.forEach(u=>{
-    if(u.parentId && map[u.parentId]) map[u.parentId].children.push(map[u.id]);
-    else roots.push(map[u.id]);
-  });
-  return roots;
-}
-
-function renderTree(nodes,depth=0){
-  let html="";
-  nodes.forEach(n=>{
-    html+=`<div class="node ${n.type} ${selected===n.id?'selected':''}" 
-      style="margin-left:${depth*14}px"
-      onclick="select('${n.id}')">
-      ${n.label||n.text}
-    </div>`;
-    if(n.children) html+=renderTree(n.children,depth+1);
-  });
-  return html;
-}
-
-function select(id){
-  selected=id;
-  render();
-}
-
-function extractSignals(text){
-  return {
-    required: text.match(/\b(shall|must)\b[^.;]*/gi),
-    allowed: text.match(/\bmay\b[^.;]*/gi),
-    prohibited: text.match(/\b(must not|may not)\b[^.;]*/gi),
-    timing: text.match(/\b\d+.*(days?|years?)\b/gi)
-  };
-}
-
-function render(){
-  const el=document.getElementById("content");
-  if(!data.length) return;
-
-  const node=data.find(x=>x.id===selected)||data[0];
-  selected=node.id;
-
-  if(tab===0){
-    const tree=buildTree(data);
-    el.innerHTML=renderTree(tree);
-  }
-
-  if(tab===1){
-    el.innerHTML=`<div class="text-box">${node.text}</div>`;
-  }
-
-  if(tab===2){
-    const s=extractSignals(node.text);
-
-    function blocks(arr,cls){
-      if(!arr) return `<i style="color:#444">Not specified</i>`;
-      return arr.map(x=>`<div class="block ${cls}">${x}</div>`).join("");
+      --subsection: #7ba7bc;
+      --clause: #9b8bb4;
+      --subclause: #b88b72;
     }
 
-    el.innerHTML=`
-      <div class="label">REQUIRED (SHALL / MUST)</div>
-      ${blocks(s.required,"required")}
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: Georgia, serif; }
+    body { min-height: 100vh; }
 
-      <div class="label">ALLOWED (MAY)</div>
-      ${blocks(s.allowed,"allowed")}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #0b0b09;
+    }
 
-      <div class="label">PROHIBITED (MUST NOT / MAY NOT)</div>
-      ${blocks(s.prohibited,"prohibited")}
+    .title {
+      font-size: 19px;
+      color: var(--parse);
+    }
 
-      <div class="label">TIMING</div>
-      ${blocks(s.timing,"timing")}
-    `;
-  }
-}
+    .subtitle {
+      font-family: monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #4f493f;
+      text-transform: uppercase;
+    }
 
-fetch("output_structured.json")
-.then(r=>r.json())
-.then(d=>{
-  data=d.units;
-  render();
-});
-</script>
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
+    .btn, .file-label {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn:hover, .file-label:hover { background: #1c1914; }
+    .file-input { display: none; }
+    .status { font-size: 11px; color: var(--muted); font-family: monospace; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 310px 1fr 340px;
+      height: calc(100vh - 58px);
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      background: var(--panel);
+    }
+
+    .panel + .panel { border-left: 1px solid var(--line); }
+
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      font-family: monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow: auto;
+      padding: 14px;
+      min-height: 0;
+    }
+
+    .origin-header { color: var(--origin); }
+    .parse-header { color: var(--parse); }
+    .meaning-header { color: var(--meaning); }
+
+    .card {
+      background: #100f0d;
+      border: 1px solid #211d18;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .kicker {
+      font-family: monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #746c5f;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    .heading {
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+
+    .heading.origin { color: var(--origin); }
+    .heading.parse { color: var(--parse); }
+    .heading.meaning { color: var(--meaning); }
+
+    .text-box {
+      border: 1px solid #24201b;
+      background: #14120f;
+      border-radius: 8px;
+      padding: 14px;
+      line-height: 1.75;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .tree-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      margin-bottom: 3px;
+      border-radius: 5px;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+    }
+
+    .tree-node:hover { background: #1a1713; }
+    .tree-node.selected {
+      background: rgba(200,168,107,0.12);
+      border-left-color: var(--parse);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .label {
+      min-width: 72px;
+      font-family: monospace;
+      font-size: 10px;
+      color: #8a8175;
+      flex-shrink: 0;
+    }
+
+    .node-text {
+      font-size: 12px;
+      color: #c6bda9;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .type-header .dot { background: var(--origin); }
+    .type-section .dot { background: var(--parse); }
+    .type-subsection .dot { background: var(--subsection); }
+    .type-clause .dot { background: var(--clause); }
+    .type-subclause .dot,
+    .type-subclause_upper .dot { background: var(--subclause); }
+    .type-line .dot { background: #666; }
+
+    .signal-title {
+      font-family: monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #6e6659;
+      margin: 10px 0 6px;
+      text-transform: uppercase;
+    }
+
+    .signal-block {
+      padding: 9px 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 7px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #d0c6b4;
+      border-left: 3px solid;
+    }
+
+    .required { border-color: var(--parse); }
+    .allowed { border-color: #87a87d; }
+    .prohibited { border-color: var(--meaning); }
+    .timing { border-color: var(--clause); }
+
+    .empty {
+      color: #6f675a;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .small {
+      font-family: monospace;
+      font-size: 11px;
+      color: #7a7266;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; height: auto; }
+      .panel { min-height: 320px; }
+      .panel + .panel { border-left: none; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <div class="title">Traceability Constraint System</div>
+      <div class="subtitle">Legislative Explorer</div>
+    </div>
+
+    <div class="actions">
+      <label class="file-label">
+        Load output_structured.json
+        <input id="fileInput" class="file-input" type="file" accept=".json,application/json" />
+      </label>
+      <button id="demoBtn" class="btn" type="button">Load Demo</button>
+      <div id="status" class="status">No file loaded</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-header origin-header">Origin / Structure</div>
+      <div class="panel-body" id="treePanel">
+        <div class="empty">Load your existing JSON file.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header parse-header">Text</div>
+      <div class="panel-body" id="textPanel">
+        <div class="empty">Select a node.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header meaning-header">Signals / Meaning Slot</div>
+      <div class="panel-body" id="signalsPanel">
+        <div class="empty">Select a node.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      data: null,
+      selectedId: null
+    };
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function buildTree(units) {
+      const map = {};
+      const roots = [];
+
+      units.forEach(unit => {
+        map[unit.id] = { ...unit, children: [] };
+      });
+
+      units.forEach(unit => {
+        if (unit.parentId && map[unit.parentId]) {
+          map[unit.parentId].children.push(map[unit.id]);
+        } else {
+          roots.push(map[unit.id]);
+        }
+      });
+
+      return roots;
+    }
+
+    function flatten(nodes, result = []) {
+      nodes.forEach(node => {
+        result.push(node);
+        if (node.children?.length) flatten(node.children, result);
+      });
+      return result;
+    }
+
+    function selectedNode() {
+      if (!state.data?.units?.length) return null;
+      const flat = flatten(buildTree(state.data.units));
+      return flat.find(x => x.id === state.selectedId) || flat[0];
+    }
+
+    function extractSignals(text) {
+      const prohibited = text.match(/\b(must not|may not|shall not)\b[^.;]*/gi);
+      const required = text.match(/\b(shall|must)\b[^.;]*/gi);
+      const allowed = text.match(/\bmay\b[^.;]*/gi);
+      const timing = text.match(/\b(\d+\s+(days?|years?|months?|business days?)|no later than[^.;]*|within[^.;]*|before[^.;]*|after[^.;]*)\b/gi);
+
+      return { prohibited, required, allowed, timing };
+    }
+
+    function blockList(values, cls) {
+      if (!values?.length) return `<div class="empty">Not specified</div>`;
+      return values.map(v => `<div class="signal-block ${cls}">${escapeHtml(v)}</div>`).join("");
+    }
+
+    function renderTree() {
+      const el = document.getElementById("treePanel");
+
+      if (!state.data?.units?.length) {
+        el.innerHTML = `<div class="empty">Load your existing JSON file.</div>`;
+        return;
+      }
+
+      const roots = buildTree(state.data.units);
+      let html = "";
+
+      function walk(nodes, depth = 0) {
+        nodes.forEach(node => {
+          const selected = node.id === state.selectedId ? "selected" : "";
+          html += `
+            <div
+              class="tree-node type-${escapeHtml(node.type)} ${selected}"
+              style="margin-left:${depth * 14}px"
+              data-id="${escapeHtml(node.id)}"
+            >
+              <span class="dot"></span>
+              <span class="label">${escapeHtml(node.label || "")}</span>
+              <span class="node-text">${escapeHtml(node.title || node.text || "")}</span>
+            </div>
+          `;
+          if (node.children?.length) walk(node.children, depth + 1);
+        });
+      }
+
+      walk(roots);
+      el.innerHTML = html;
+
+      el.querySelectorAll(".tree-node").forEach(nodeEl => {
+        nodeEl.addEventListener("click", () => {
+          state.selectedId = nodeEl.dataset.id;
+          renderAll();
+        });
+      });
+    }
+
+    function renderText() {
+      const el = document.getElementById("textPanel");
+      const node = selectedNode();
+
+      if (!node) {
+        el.innerHTML = `<div class="empty">Select a node.</div>`;
+        return;
+      }
+
+      const panelColorClass = node.type === "header" ? "origin" : "parse";
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="kicker">${escapeHtml(node.type)} · ${escapeHtml(node.label || "")}</div>
+          <div class="heading ${panelColorClass}">${escapeHtml(node.title || node.label || "")}</div>
+          <div class="text-box">${escapeHtml(node.text || "")}</div>
+        </div>
+      `;
+    }
+
+    function renderSignals() {
+      const el = document.getElementById("signalsPanel");
+      const node = selectedNode();
+
+      if (!node) {
+        el.innerHTML = `<div class="empty">Select a node.</div>`;
+        return;
+      }
+
+      const s = extractSignals(node.text || "");
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="kicker">Selected parsed unit</div>
+          <div class="heading meaning">${escapeHtml(node.label || "")}</div>
+          <div class="small">This is the red panel contract. Meaning can be wired here later.</div>
+        </div>
+
+        <div class="signal-title">Required</div>
+        ${blockList(s.required, "required")}
+
+        <div class="signal-title">Allowed</div>
+        ${blockList(s.allowed, "allowed")}
+
+        <div class="signal-title">Prohibited</div>
+        ${blockList(s.prohibited, "prohibited")}
+
+        <div class="signal-title">Timing</div>
+        ${blockList(s.timing, "timing")}
+      `;
+    }
+
+    function renderAll() {
+      if (state.data?.units?.length && !state.selectedId) {
+        state.selectedId = state.data.units[0].id;
+      }
+      renderTree();
+      renderText();
+      renderSignals();
+
+      const status = document.getElementById("status");
+      if (state.data?.units?.length) {
+        status.textContent = `Loaded ${state.data.units.length} units`;
+      }
+    }
+
+    function loadData(obj) {
+      if (!obj || !Array.isArray(obj.units)) {
+        alert("This file must contain a top-level units array.");
+        return;
+      }
+      state.data = obj;
+      state.selectedId = obj.units[0]?.id || null;
+      renderAll();
+    }
+
+    document.getElementById("fileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      loadData(JSON.parse(text));
+    });
+
+    document.getElementById("demoBtn").addEventListener("click", () => {
+      loadData({
+        units: [
+          { id: "h1", parentId: null, type: "header", label: "Header 1", title: "", text: "SHB 2157" },
+          { id: "h2", parentId: null, type: "header", label: "Header 2", title: "", text: "2026 Regular Session" },
+          { id: "s1", parentId: null, type: "section", label: "Sec. 1", title: "Definitions", text: "Sec. 1 Definitions." },
+          { id: "ss1", parentId: "s1", type: "subsection", label: "(1)", title: "", text: "(1)" },
+          { id: "c1", parentId: "ss1", type: "clause", label: "(a)", title: "", text: '(a) "Developer" means a person doing business in Washington.' },
+          { id: "c2", parentId: "ss1", type: "clause", label: "(b)", title: "", text: '(b) "Consumer" does not include a natural person acting in a commercial context.' },
+          { id: "s2", parentId: null, type: "section", label: "Sec. 2", title: "Developer Obligations", text: "A developer shall provide notice no later than 30 days before a material change." }
+        ]
+      });
+    });
+  </script>
 </body>
 </html>
