@@ -1,13 +1,12 @@
 from typing import Any, Dict, List
-from uuid import uuid4
 
 # You will port these from your TS code
 # from your existing logic:
-# preprocessXml
-# parseXmlToNodes
+# preprocess_xml
+# parse_xml_to_nodes
 
 
-def build_structure(raw_text: str, input_type: str) -> Dict[str, Any]:
+def build_structure(document_id: str, raw_text: str, input_type: str) -> Dict[str, Any]:
     """
     Layer 2 — Structure
 
@@ -18,14 +17,10 @@ def build_structure(raw_text: str, input_type: str) -> Dict[str, Any]:
     - preserve order + structure
     """
 
-    document_id = str(uuid4())
-    errors: List[str] = []
-
     try:
         if input_type == "xml":
             normalized_xml, detection = preprocess_xml(raw_text)
 
-            # Fail on unsupported schema
             if detection.get("unsupportedSchemaReason"):
                 return _fail(document_id, input_type, detection["unsupportedSchemaReason"])
 
@@ -51,12 +46,12 @@ def build_structure(raw_text: str, input_type: str) -> Dict[str, Any]:
     }
 
 
-def _normalize_nodes(raw_nodes: List[Dict]) -> List[Dict]:
+def _normalize_nodes(raw_nodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Convert your existing node shape → system node shape
+    Convert existing node shape into system node shape.
     """
 
-    normalized = []
+    normalized: List[Dict[str, Any]] = []
 
     for idx, node in enumerate(raw_nodes, start=1):
         normalized.append({
@@ -73,18 +68,18 @@ def _normalize_nodes(raw_nodes: List[Dict]) -> List[Dict]:
     return normalized
 
 
-def _build_path(node: Dict) -> str:
+def _build_path(node: Dict[str, Any]) -> str:
     """
-    Deterministic path builder
+    Deterministic path builder.
     """
 
-    parts = []
+    parts: List[str] = []
 
     if node.get("parentId"):
-        parts.append(node["parentId"])
+        parts.append(str(node["parentId"]))
 
     if node.get("id"):
-        parts.append(node["id"])
+        parts.append(str(node["id"]))
 
     return "/".join(parts)
 
