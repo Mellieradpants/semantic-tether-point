@@ -4,7 +4,7 @@ from tempfile import NamedTemporaryFile
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from engines.semantic_tether_engine import build_traceable_output
+from pipeline.run_pipeline import run_pipeline
 
 app = FastAPI(title="Traceability Constraint System API")
 
@@ -51,7 +51,7 @@ def analyze(data: AnalyzeRequest):
             tmp.write(data.content)
             tmp_path = Path(tmp.name)
 
-        result = build_traceable_output(tmp_path)
+        result = run_pipeline(data.content)
         return result
 
     except HTTPException:
@@ -67,5 +67,3 @@ def analyze(data: AnalyzeRequest):
     finally:
         if tmp_path is not None and tmp_path.exists():
             tmp_path.unlink()
-
-
